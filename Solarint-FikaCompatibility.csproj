@@ -84,6 +84,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientFunctionsClass.cs" />
+    <Compile Include="FikaCompatBase.cs" />
+    <Compile Include="FikaCompatComponent.cs" />
+    <Compile Include="HostFunctionsClass.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
