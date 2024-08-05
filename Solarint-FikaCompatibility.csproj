@@ -84,9 +84,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Component\ClientDoorSync.cs" />
     <Compile Include="Component\ClientFunctionsClass.cs" />
     <Compile Include="Component\FikaCompatBase.cs" />
     <Compile Include="Component\FikaCompatComponent.cs" />
+    <Compile Include="Component\HostDoorSync.cs" />
     <Compile Include="Component\HostFunctionsClass.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

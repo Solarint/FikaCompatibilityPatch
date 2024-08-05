@@ -86,5 +86,9 @@ namespace Solarint.FikaCompatibility
                 // isHost is null, haven't found out if we are host or not
             }
         }
+
+        private void getAllDoors()
+        {
+        }
     }
 }

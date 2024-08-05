@@ -1,33 +1,30 @@
-﻿using EFT.Interactive;
-
-namespace Solarint.FikaCompatibility
+﻿namespace Solarint.FikaCompatibility
 {
     internal class ClientFunctionsClass : FikaCompatBase
     {
+        private ClientDoorSync _doorSync { get; }
+
         internal ClientFunctionsClass(FikaCompatComponent component) : base(component)
         {
+            _doorSync = new ClientDoorSync(component);
         }
 
         public void Update()
         {
+            if (IsHost != false) {
+                return;
+            }
+            _doorSync.Update();
         }
 
         public void Dispose()
         {
+            _doorSync.Dispose();
         }
 
         public void HandlePackets()
         {
-        }
-
-        private void checkHostDisabledDoors()
-        {
-            // receive packet from host, disable all doors if host enables config option
-        }
-
-        private void clientDoorStateChange(int doorId, EDoorState state, bool invertedOpenAngle)
-        {
-            // receive packet from host, find door, and change state to match
+            _doorSync.HandlePackets();
         }
     }
 }
