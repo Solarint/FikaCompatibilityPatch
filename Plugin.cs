@@ -23,9 +23,12 @@ namespace Solarint.FikaCompatibility
     internal class FikaCompatComponent : MonoBehaviour
     {
         private static FikaCompatComponent _instance;
-        private GameWorldComponent _sainGameWorld;
-        private GameWorld _eftGameWorld;
-        private bool? _isHost = null;
+        internal GameWorldComponent SAINGameworld;
+        internal GameWorld EFTGameworld;
+        internal bool? IsHost = null;
+
+        internal ClientFunctionsClass ClientFunctions;
+        internal HostFunctionsClass HostFunctions;
 
         static FikaCompatComponent()
         {
@@ -37,10 +40,10 @@ namespace Solarint.FikaCompatibility
             _instance = this;
             checkIsHost();
 
-            _sainGameWorld = GetComponent<GameWorldComponent>();
-            _eftGameWorld = GetComponent<GameWorld>();
+            SAINGameworld = GetComponent<GameWorldComponent>();
+            EFTGameworld = GetComponent<GameWorld>();
 
-            if (_sainGameWorld == null) {
+            if (SAINGameworld == null) {
                 Console.WriteLine($"SAIN GameWorld Null");
                 Console.WriteLine($"SAIN GameWorld Null");
                 Console.WriteLine($"SAIN GameWorld Null");
@@ -52,16 +55,19 @@ namespace Solarint.FikaCompatibility
                 Console.WriteLine("Got SAIN Gameworld");
                 Console.WriteLine("Got SAIN Gameworld");
             }
+
+            ClientFunctions = new ClientFunctionsClass(this);
+            HostFunctions = new HostFunctionsClass(this);
         }
 
         private void checkIsHost()
         {
             // find out if the player is hosting
             if (true) {
-                _isHost = true;
+                IsHost = true;
             }
             else if (false) {
-                _isHost = false;
+                IsHost = false;
             }
         }
 
@@ -81,10 +87,10 @@ namespace Solarint.FikaCompatibility
 
         private void checkSubscribe()
         {
-            if (_isHost == true &&
+            if (IsHost == true &&
                 !_subscribed &&
-                _sainGameWorld != null) {
-                var doors = _sainGameWorld.Doors;
+                SAINGameworld != null) {
+                var doors = SAINGameworld.Doors;
                 if (doors != null) {
                     doors.OnDoorsDisabled += doorsDisabled;
                     doors.OnDoorStateChanged += doorStateChanged;
@@ -97,14 +103,8 @@ namespace Solarint.FikaCompatibility
 
         private void OnDestroy()
         {
-            if (_sainGameWorld != null) {
-                var doors = _sainGameWorld.Doors;
-                if (doors == null) {
-                    return;
-                }
-                doors.OnDoorsDisabled -= doorsDisabled;
-                doors.OnDoorStateChanged -= doorStateChanged;
-            }
+            ClientFunctions?.Dispose();
+            HostFunctions?.Dispose();
         }
 
         private static void Dispose()
@@ -114,9 +114,11 @@ namespace Solarint.FikaCompatibility
 
         private void handlePackets()
         {
-            if (_isHost == true) {
+            if (IsHost == true) {
+                HostFunctions.HandlePackets();
             }
-            else if (_isHost == false) {
+            else if (IsHost == false) {
+                ClientFunctions.HandlePackets();
             }
             else {
                 // isHost is null, haven't found out if we are host or not
@@ -131,6 +133,102 @@ namespace Solarint.FikaCompatibility
         private void clientDoorStateChange(int doorId, EDoorState state, bool invertedOpenAngle)
         {
             // receive packet from host, find door, and change state to match
+        }
+    }
+
+    internal class HostFunctionsClass : FikaCompatBase
+    {
+        private bool _subscribed;
+
+        internal HostFunctionsClass(FikaCompatComponent component) : base(component)
+        {
+        }
+
+        public void Update()
+        {
+            checkSubscribe();
+        }
+
+        public void Dispose()
+        {
+            if (SAINGameworld != null) {
+                var doors = SAINGameworld.Doors;
+                if (doors == null) {
+                    return;
+                }
+                doors.OnDoorsDisabled -= doorsDisabled;
+                doors.OnDoorStateChanged -= doorStateChanged;
+            }
+        }
+
+        private void checkSubscribe()
+        {
+            if (IsHost == true &&
+                !_subscribed &&
+                SAINGameworld != null) {
+                var doors = SAINGameworld.Doors;
+                if (doors != null) {
+                    doors.OnDoorsDisabled += doorsDisabled;
+                    doors.OnDoorStateChanged += doorStateChanged;
+                    _subscribed = true;
+                }
+            }
+        }
+
+        public void HandlePackets()
+        {
+        }
+
+        private void doorsDisabled(bool value)
+        {
+        }
+
+        private void doorStateChanged(Door door, EDoorState state, bool invertedOpenAngle)
+        {
+        }
+    }
+
+    internal class ClientFunctionsClass : FikaCompatBase
+    {
+        internal ClientFunctionsClass(FikaCompatComponent component) : base(component)
+        {
+        }
+
+        public void Update()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public void HandlePackets()
+        {
+        }
+
+        private void checkHostDisabledDoors()
+        {
+            // receive packet from host, disable all doors if host enables config option
+        }
+
+        private void clientDoorStateChange(int doorId, EDoorState state, bool invertedOpenAngle)
+        {
+            // receive packet from host, find door, and change state to match
+        }
+    }
+
+    internal abstract class FikaCompatBase
+    {
+        protected bool? IsHost => CompatComponent.IsHost;
+        protected FikaCompatComponent CompatComponent { get; }
+        protected GameWorldComponent SAINGameworld { get; }
+        protected GameWorld EFTGameworld { get; }
+
+        internal FikaCompatBase(FikaCompatComponent component)
+        {
+            CompatComponent = component;
+            SAINGameworld = component.SAINGameworld;
+            EFTGameworld = component.EFTGameworld;
         }
     }
 
